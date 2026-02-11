@@ -8,6 +8,7 @@ import {
   Calendar,
   TrendingUp,
   FileText,
+  UserSearch,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const navigation = [
   { name: "Calendar", href: "/calendar", icon: Calendar },
   { name: "Pipeline", href: "/pipeline", icon: TrendingUp },
   { name: "Memos", href: "/memos", icon: FileText },
+  { name: "LinkedIn Tracker", href: "/linkedin-tracker", icon: UserSearch },
 ];
 
 export function Sidebar() {

@@ -155,6 +155,40 @@ export const memos = pgTable("memos", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Tracked people table (LinkedIn role change monitoring)
+export const trackedPeople = pgTable("tracked_people", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  contactId: uuid("contact_id").references(() => contacts.id),
+  name: varchar("name", { length: 255 }).notNull(),
+  linkedinUrl: text("linkedin_url").notNull(),
+  category: varchar("category", { length: 100 }).notNull(), // founder_in_stealth, operator_at_company
+  currentRole: varchar("current_role", { length: 500 }),
+  currentCompany: varchar("current_company", { length: 255 }),
+  monitoringStatus: varchar("monitoring_status", { length: 50 }).default("active"), // active, paused, stopped
+  parallelMonitorId: varchar("parallel_monitor_id", { length: 255 }),
+  notes: text("notes"),
+  lastCheckedAt: timestamp("last_checked_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Role changes detected by Parallel.ai monitors
+export const roleChanges = pgTable("role_changes", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  trackedPersonId: uuid("tracked_person_id").references(() => trackedPeople.id).notNull(),
+  parallelEventGroupId: varchar("parallel_event_group_id", { length: 255 }),
+  changeType: varchar("change_type", { length: 100 }).notNull(), // new_role, left_company, company_announced, title_change
+  previousRole: varchar("previous_role", { length: 500 }),
+  previousCompany: varchar("previous_company", { length: 255 }),
+  newRole: varchar("new_role", { length: 500 }),
+  newCompany: varchar("new_company", { length: 255 }),
+  summary: text("summary"), // AI-generated summary from Parallel
+  sourceUrls: jsonb("source_urls").$type<string[]>().default([]),
+  isRead: boolean("is_read").default(false),
+  detectedAt: timestamp("detected_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Chat messages table (for the conversational interface)
 export const chatMessages = pgTable("chat_messages", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -186,6 +220,22 @@ export const contactsRelations = relations(contacts, ({ many }) => ({
   founderDeals: many(founders),
   referredDeals: many(referrers),
   emails: many(emails),
+  trackedPeople: many(trackedPeople),
+}));
+
+export const trackedPeopleRelations = relations(trackedPeople, ({ one, many }) => ({
+  contact: one(contacts, {
+    fields: [trackedPeople.contactId],
+    references: [contacts.id],
+  }),
+  roleChanges: many(roleChanges),
+}));
+
+export const roleChangesRelations = relations(roleChanges, ({ one }) => ({
+  trackedPerson: one(trackedPeople, {
+    fields: [roleChanges.trackedPersonId],
+    references: [trackedPeople.id],
+  }),
 }));
 
 export const foundersRelations = relations(founders, ({ one }) => ({

@@ -43,3 +43,37 @@ export interface Email {
   isPriority: boolean;
   classification?: string;
 }
+
+export interface TrackedPerson {
+  id: string;
+  contactId?: string;
+  name: string;
+  linkedinUrl: string;
+  category: "founder_in_stealth" | "operator_at_company";
+  currentRole?: string;
+  currentCompany?: string;
+  monitoringStatus: "active" | "paused" | "stopped";
+  parallelMonitorId?: string;
+  notes?: string;
+  lastCheckedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  unreadChanges?: number;
+  latestChange?: RoleChange | null;
+}
+
+export interface RoleChange {
+  id: string;
+  trackedPersonId: string;
+  parallelEventGroupId?: string;
+  changeType: "new_role" | "left_company" | "company_announced" | "title_change";
+  previousRole?: string;
+  previousCompany?: string;
+  newRole?: string;
+  newCompany?: string;
+  summary?: string;
+  sourceUrls?: string[];
+  isRead: boolean;
+  detectedAt: string;
+  createdAt: string;
+}
